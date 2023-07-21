@@ -9,19 +9,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
 
-import ssl
-
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-else:
-   ssl._create_default_https_context = _create_unverified_https_context
-
 # Download the NLTK data
 nltk.download('punkt')
-nltk.download('wordnet')
-nltk.download('omw-1.4')
 nltk.download('stopwords')
 
 # Load the text file and parse it into questions and answers
@@ -88,10 +77,9 @@ def index():
 @app.route('/ask', methods=['POST'])
 def ask_question():
     user_question = request.form['question']
-    file_path = "data.txt" 
+    file_path = "data.txt"
     answer = analyze_qna(file_path, user_question)
     return render_template('index.html', question=user_question, answer=answer)
 
 if __name__ == "__main__":
     app.run(debug=True)
-

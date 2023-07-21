@@ -6,20 +6,23 @@
 </head>
 <body>
     <div class="container">
-        <div class="chat">
-            <div class="chat-body" id="chat-body">
-                {% for message in messages %}
-                <div class="message {{ message['type'] }}">
-                    {{ message['text'] }}
+        <div class="chatbot">
+            <div class="chat-container">
+                <div class="chatbot-messages">
+                    <div class="chat user">
+                        <div class="message">{{ question }}</div>
+                    </div>
+                    {% if answer %}
+                    <div class="chat chatbot">
+                        <div class="message">{{ answer }}</div>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
             </div>
-            <div class="chat-input">
-                <form action="/ask" method="post" id="user-form">
-                    <input type="text" name="question" id="user-input" placeholder="Type a message...">
-                    <button type="submit"><i class="fa fa-paper-plane"></i></button>
-                </form>
-            </div>
+            <form action="/ask" method="post" id="user-form">
+                <input type="text" name="question" id="user-input" placeholder="Ask a question...">
+                <button type="submit">Send</button>
+            </form>
         </div>
     </div>
 </body>
