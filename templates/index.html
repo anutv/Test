@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot AI Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="chat">
+            <div class="chat-body" id="chat-body">
+                {% for message in messages %}
+                <div class="message {{ message['type'] }}">
+                    {{ message['text'] }}
+                </div>
+                {% endfor %}
+            </div>
+            <div class="chat-input">
+                <form action="/ask" method="post" id="user-form">
+                    <input type="text" name="question" id="user-input" placeholder="Type a message...">
+                    <button type="submit"><i class="fa fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
