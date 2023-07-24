@@ -1,5 +1,6 @@
 import os
 import nltk
+import openai  # Import the OpenAI library
 from flask import Flask, render_template, request
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
@@ -51,24 +52,43 @@ def calculate_similarity(text1, text2):
     vectors = vectorizer.toarray()
     return cosine_similarity([vectors[0]], [vectors[1]])
 
+# Get the most relevant answer using OpenAI API
+def get_openai_answer(user_question):
+    openai.api_key = "YOUR_OPENAI_API_KEY"  # Replace with your OpenAI API key
+    response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=user_question,
+        max_tokens=150,
+        stop=["\n"],
+        temperature=0.7
+    )
+    return response.choices[0].text.strip()
+
 # Main function to analyze questions and answers
-def analyze_qna(file_path, question):
+def analyze_qna(file_path, user_question):
     questions, answers = read_qna_file(file_path)
+    question_similarities = []
 
-    question_words = tokenize_text(question)
-    processed_question = ' '.join(preprocess_text(question_words))
+    user_question_words = tokenize_text(user_question)
+    processed_user_question = ' '.join(preprocess_text(user_question_words))
 
-    similarities = []
-    for answer in answers:
-        answer_words = tokenize_text(answer)
-        processed_answer = ' '.join(preprocess_text(answer_words))
-        similarities.append((answer, calculate_similarity(processed_question, processed_answer)))
+    # Calculate cosine similarity for each question
+    for question in questions:
+        question_words = tokenize_text(question)
+        processed_question = ' '.join(preprocess_text(question_words))
+        similarity = calculate_similarity(processed_user_question, processed_question)
+        question_similarities.append(similarity[0][0])
 
-    # Sort answers by similarity
-    sorted_similarities = sorted(similarities, key=lambda x: x[1], reverse=True)
+    max_similarity = max(question_similarities)
 
-    # Return the most relevant answer
-    return sorted_similarities[0][0]
+    if max_similarity >= 0.75:
+        # If the highest similarity is above 0.75, get the most relevant answer
+        most_relevant_index = question_similarities.index(max_similarity)
+        most_relevant_answer = answers[most_relevant_index]
+        return most_relevant_answer
+    else:
+        # Otherwise, use OpenAI API to get the response
+        return get_openai_answer(user_question)
 
 @app.route('/')
 def index():
@@ -77,7 +97,7 @@ def index():
 @app.route('/ask', methods=['POST'])
 def ask_question():
     user_question = request.form['question']
-    file_path = "data.txt"
+    file_path = "data.txt"  # Update with the path to your Q&A text file
     answer = analyze_qna(file_path, user_question)
     return render_template('index.html', question=user_question, answer=answer)
 
